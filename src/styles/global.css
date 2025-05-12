@@ -4,14 +4,14 @@
 
 @layer base {
   @font-face {
-    font-family: "Geist";
-    src: url("/fonts/geist-variable.woff2") format("woff2");
-    font-display: swap;
+    /*font-family: "Geist";*/
+    /*src: url("/fonts/geist-variable.woff2") format("woff2");*/
+    /*font-display: swap;*/
   }
   @font-face {
-    font-family: "Geist Mono";
-    src: url("/fonts/geist-mono-variable.woff2") format("woff2");
-    font-display: swap;
+    /*font-family: "Geist Mono";*/
+    /*src: url("/fonts/geist-mono-variable.woff2") format("woff2");*/
+    /*font-display: swap;*/
   }
   html.dark .astro-code,
   html.dark .astro-code span {
@@ -24,9 +24,22 @@
 }
 
 @layer components {
+  /*code {*/
+  /*  @apply text-sm font-mono text-purple-700 font-medium;*/
+  /*}*/
+  /**/
+  /*pre.astro-code {*/
+  /*  @apply px-4 py-3 rounded-lg text-xl !bg-zinc-50/60 leading-6 overflow-x-scroll;*/
+  /*}*/
   article {
+    code {
+      @apply text-sm font-mono text-purple-700 font-medium;
+    }
+    pre.astro-code {
+      @apply px-4 py-3 rounded-lg text-xl !bg-zinc-50/60 leading-6 overflow-x-scroll;
+    }
     p {
-      @apply my-4 leading-relaxed;
+      @apply my-4 leading-relaxed text-gray-700 dark:text-gray-400;
     }
     h1 {
       @apply my-4 text-xl font-medium dark:text-white;
@@ -40,12 +53,6 @@
     h6 {
       @apply my-4 font-medium dark:text-white;
     }
-    :not(pre) > code {
-      @apply whitespace-nowrap rounded border bg-zinc-200/50 px-1 py-0.5 font-mono text-sm font-medium text-black dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-white;
-    }
-    pre:has(code) {
-      @apply my-4 max-h-[600px] overflow-auto rounded-lg border p-4 font-mono text-sm font-medium dark:border-zinc-700;
-    }
     img {
       @apply my-4 rounded-lg border dark:border-zinc-700;
     }
@@ -56,7 +63,7 @@
       @apply my-4 border-l-2 pl-4;
     }
     a {
-      @apply text-blue-500 underline;
+      @apply text-gray-500 underline;
     }
     table {
       @apply my-4 w-full table-auto border-collapse text-sm;
@@ -68,11 +75,17 @@
       }
     }
     ol {
-      @apply my-1 list-inside list-decimal space-y-1 [&_ol]:pl-5 [&_ul]:pl-5;
+      @apply space-y-1 text-gray-700 list-decimal list-inside dark:text-gray-400 [&_ol]:pl-5 [&_ol]:mt-2 [&_ul]:pl-5 [&_ul]:mt-2
     }
+    /*ol {*/
+    /*  @apply list-inside list-decimal space-y-1 [&_ol]:pl-5 [&_ul]:pl-5;*/
+    /*}*/
     ul {
-      @apply my-1 list-inside list-disc space-y-1 [&_ol]:pl-5 [&_ul]:pl-5;
+      @apply max-w-md space-y-1 text-gray-700 list-disc list-inside dark:text-gray-400 [&_ol]:pl-5 [&_ol]:mt-2 [&_ul]:pl-5 [&_ul]:mt-2
     }
+    /*ul {*/
+    /*  @apply list-inside list-disc space-y-1 [&_ol]:pl-5 [&_ul]:pl-5;*/
+    /*}*/
     kbd {
       @apply rounded border border-b-2 bg-zinc-100 px-1 py-0.5 font-mono text-xs font-medium text-black dark:border-zinc-700 dark:bg-zinc-800 dark:text-white;
     }
