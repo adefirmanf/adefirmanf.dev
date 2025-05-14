@@ -3,7 +3,7 @@ import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
 
 import sitemap from "@astrojs/sitemap";
-
+import react from "@astrojs/react";
 import tailwind from "@astrojs/tailwind";
 import rehypeCallouts from "rehype-callouts";
 import { SITE_URL } from "./src/consts";
@@ -12,7 +12,7 @@ import { SITE_URL } from "./src/consts";
 export default defineConfig({
   site: SITE_URL,
   base: "/",
-  integrations: [mdx(), sitemap(), tailwind()],
+  integrations: [mdx(), sitemap(), tailwind(), react()],
   markdown: {
     rehypePlugins: [rehypeCallouts],
     shikiConfig: {
