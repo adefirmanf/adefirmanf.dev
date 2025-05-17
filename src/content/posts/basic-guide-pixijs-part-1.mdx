@@ -1,0 +1,93 @@
+---
+title: "Basic PixiJS Part - 1 (Basic Move and Collision)"
+description: "In this part, we will learn the basic move and collision of PixiJS."
+date: "May 17 2025"
+tags:  ["animated"] 
+---
+
+import {BasicShape, AnimatedShape} from "../../anim/SquareShapeMove.tsx"
+
+# Getting Started 
+In this guide, I'll show you how to get started with PixiJS. This guide will cover creating graphics and making them move. We'll also explore collision detection between graphics objects.
+
+# Graphics
+First, we need to initialize a Square object and implement its movement. But before that, let's create the graphics.
+
+> [!note] In PixiJS, Graphics not a Drawing tool. But as a Geometry building tool.
+
+```js
+// Create a Graphics object, draw a rectangle and fill it
+let obj = new Graphics()
+  .rect(0, 0, 100, 100)
+  .fill("#FFA09E")
+//  position, center of the screen
+obj.x = app.screen.width / 2.5;
+// Add it to the stage to render
+app.stage.addChild(obj);
+```
+
+<p/>
+
+`rect()` is a function to create a Rectangle, and `fill()` is a function to fill the Rectangle with a color. Then we need to add it to the stage to render.
+
+Result:
+
+<BasicShape client:load/>
+
+# Animate
+Now let's make it move! Animation in PixiJS uses Ticker callbacks. A Ticker is a function that will be called every frame.
+
+```js
+app.ticker.add(() => {
+    // Infinite loop
+})
+
+```
+When you log something inside the ticker callback, you'll get a log entry for every frame. Let's implement this with our current graphics object:
+
+```js
+let obj = new Graphics()
+  .rect(0, 0, 100, 100)
+  .fill("#FFA09E")
+
+app.ticker.add(() => {
+    obj.x += 1
+})
+```
+Result:
+
+> [!warning] Since this animation runs in an infinite loop, be careful of memory leaks. We need to optimize memory usage after this.
+
+<AnimatedShape client:load/>
+
+# Memory Management
+We need to release memory when we no longer need to render objects that have moved off-screen. Let's add conditions to check if the shape has moved out of the screen boundaries.
+There are two methods I typically use:
+
+## Graphics.destroy()
+This is useful when you don't need the graphics object anymore. In games, you can think of this as something like a bullet or projectile.
+
+```js
+if (obj.x >= app.screen.width || obj.y >= app.screen.height || obj.x < 0 || obj.y < 0) {
+ obj.destroy()
+}
+
+```
+
+## App.ticker.stop()
+This approach is useful when you need to refresh the animation, such as when you want to restart the animation like the example on this page.
+
+```js
+if (obj.x >= app.screen.width || obj.y >= app.screen.height || obj.x < 0 || obj.y < 0) {
+ app.ticker.stop()
+}
+
+const handleRefresh = () => {
+    // Get the current graphics in the stage and set the beginning position  
+    app.stage.children[0].position.set(0,0)
+    // Start from the beginning 
+    app.ticker.start()
+}
+```
+
+# To be continue ...

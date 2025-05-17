@@ -92,5 +92,8 @@
     mark {
       @apply dark:bg-yellow-500/50 dark:text-white;
     }
+    .callout-title{
+      padding-bottom: 5px;
+    }
   }
 }

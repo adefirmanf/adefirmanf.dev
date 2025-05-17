@@ -29,11 +29,13 @@
 </button>
 
 <script>
+  import { isDark } from "../store/theme.ts";
   const setListener = () => {
     const button = document.getElementById("theme-toggle");
 
     button?.addEventListener("click", () => {
-      document.documentElement.classList.toggle("dark");
+      const isDarkTheme = document.documentElement.classList.toggle("dark");
+      isDark.set(isDarkTheme);
     });
   };
 

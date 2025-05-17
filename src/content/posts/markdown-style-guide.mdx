@@ -5,7 +5,7 @@ date: "Nov 07 2024"
 tags:  ["animated"] 
 ---
 
-import BounceBall from "../../anim/BounceBall.jsx"
+import {AnimatedShape} from "../../anim/SquareShapeMove.jsx"
 
 # Heading style 
 
@@ -85,13 +85,12 @@ Support video!
 
 Since this file use .MDX, we can import JSX file.
 ```ts
-import BounceBall from "../../anim/BounceBall.jsx"
-<BounceBall client:load/>
+import {AnimatedShape} from "../../anim/SquareShapeMove.jsx"
+<AnimatedShape client:load/>
 ```
 > [!WARNING] This animation rendered by using Pixi.JS.
 
-
-<BounceBall client:load/>
+<AnimatedShape client:load/>
 
 # Code Blocks
 
