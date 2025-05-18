@@ -5,7 +5,7 @@ date: "May 17 2025"
 tags:  ["animated"] 
 ---
 
-import {BasicShape, AnimatedShape} from "../../anim/SquareShapeMove.tsx"
+import {BasicShape, AnimatedShape, AnimatedShapeWithCollissionEdge} from "../../anim/SquareShapeMove.tsx"
 
 # Getting Started 
 In this guide, I'll show you how to get started with PixiJS. This guide will cover creating graphics and making them move. We'll also explore collision detection between graphics objects.
@@ -89,5 +89,53 @@ const handleRefresh = () => {
     app.ticker.start()
 }
 ```
+# Collision Detection
+In this section, we’ll look at how to detect basic collisions between a graphics object and the edge of the screen in PixiJS.
 
-# To be continue ...
+> [!note] PixiJS does not include built-in collision detection. You are responsible for implementing your own logic depending on the use case.
+
+A common method for detecting collision is by checking whether the object touches or crosses the boundaries of the screen.
+
+To do this, you need:
+
+- The size of the screen (app.screen.width and app.screen.height)
+- The size of your graphics object (sprite.width, sprite.height)
+- The current position of the object (sprite.x, sprite.y)
+- You can then write conditions to detect when the object reaches the edge.
+
+
+```js
+if (obj.x >= (app.screen.width - 100)) { // Remember we define rect(0,0,100,100) ? The third parameters is the width of the object {
+ obj.x -= 1 // Move to the left 
+}
+
+if (obj.x <= 0) {
+ obj.x += 1 // Move to the right
+}
+
+```
+Here's an example:
+
+
+<AnimatedShapeWithCollissionEdge client:load/>
+
+# Summary 
+This guide introduces the basics of working with PixiJS, covering how to create and animate graphics, manage memory, and implement simple collision detection.
+
+**Graphics**
+
+PixiJS Graphics is used to build geometric shapes like rectangles. These are added to the stage to be rendered.
+
+**Animation** 
+
+Movement is achieved using app.ticker, which runs every frame and updates the object's position.
+
+**Memory Management**
+
+You can free up memory by destroying objects with Graphics.destroy() or stopping the animation loop using app.ticker.stop().
+
+**Collision Detection**
+
+Since PixiJS doesn't provide built-in collision detection, manual checks against screen boundaries using object position and size are used to detect and respond to collisions.
+
+That's it! Now you're ready to start creating graphics and animations in PixiJS!

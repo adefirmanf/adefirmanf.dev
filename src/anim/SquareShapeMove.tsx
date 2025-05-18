@@ -10,7 +10,6 @@ interface Shape {
   hasAnimated: boolean
 }
 
-
 class Square implements Shape {
   x = 0;
   y = 0;
@@ -41,7 +40,7 @@ class Square implements Shape {
   }
 
 
-  private releaseMemory(app: Application) {
+  public releaseMemory(app: Application) {
     if (this.gfx.x >= app.screen.width || this.gfx.y >= app.screen.height || this.gfx.x < 0 || this.gfx.y < 0) {
       app.ticker.stop();
     }
@@ -56,6 +55,31 @@ class Square implements Shape {
   }
 }
 
+class SquareWithColissionEdge extends Square {
+  direction = "right"
+
+  animate(app: Application): void {
+    app.ticker.add(() => {
+      if (this.gfx.destroyed) return
+      if (this.direction == "right")
+        this.gfx.x += 1;
+      else
+        this.gfx.x -= 1;
+
+      if (this.gfx.x >= (app.screen.width - this.width)) {
+        this.direction = "left"
+        this.gfx.x -= 1;
+      }
+
+      if (this.gfx.x <= 0) {
+        this.direction = "right"
+        this.gfx.x += 1;
+      }
+      this.releaseMemory(app);
+    })
+  }
+}
+
 const Render: FC<{ graphics: Shape[] }> = ({ graphics }) => {
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const appRef = useRef<Application | null>(null);
@@ -64,7 +88,6 @@ const Render: FC<{ graphics: Shape[] }> = ({ graphics }) => {
   const handleRefresh = () => {
     const app = appRef.current!;
     appRef.current?.stage.children[0].position.set(app.screen.width / 2.5, app.screen.height / 3)
-    console.log(appRef.current?.ticker.started)
     if (appRef.current?.ticker.started !== true) appRef.current?.ticker.start()
   };
 
@@ -75,15 +98,14 @@ const Render: FC<{ graphics: Shape[] }> = ({ graphics }) => {
     appRef.current = app;
 
     const bgColor = $isDark ? '#18181B' : '#FFFFFF';
-
     app.init({ background: bgColor, resizeTo: canvasRef.current }).then(() => {
-      canvasRef.current!.appendChild(app.view);
+      canvasRef.current!.appendChild(app.canvas);
 
       graphics.forEach(shape => {
         shape.update(app);
         const gfx = shape.render();
-
         app.stage.addChild(gfx)
+        app.view.style.touchAction = "auto"
         if (shape.hasAnimated) shape.animate(app)
       })
     });
@@ -109,6 +131,7 @@ const Render: FC<{ graphics: Shape[] }> = ({ graphics }) => {
         ref={canvasRef}
         style={{
           height: '200px',
+          WebkitOverflowScrolling: 'touch',
           position: 'relative',
           overflow: 'hidden',
           borderRadius: '8px',
@@ -128,3 +151,7 @@ export const AnimatedShape = () => {
   return <Render graphics={graphics} />
 };
 
+export const AnimatedShapeWithCollissionEdge = () => {
+  const graphics = [new SquareWithColissionEdge({ animated: true })];
+  return <Render graphics={graphics} />
+}
