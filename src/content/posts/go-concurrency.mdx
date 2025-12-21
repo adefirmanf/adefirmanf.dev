@@ -1,0 +1,129 @@
+---
+title: "A Gentle Introduction to Concurrency in Go: Goroutines and WaitGroups"
+description: "At first, my perspective about goroutines was completely wrong. I thought that when a goroutine didn’t print anything to the console, it meant the goroutine was running in the background."
+date: "Dec 21 2025"
+tags:  ["golang"] 
+---
+# A Small Misconception I Had About Goroutines
+At first, my perspective about goroutines was completely wrong. I thought that when a goroutine didn’t print anything to the console, it meant the goroutine was running in the background. 
+
+In reality, the opposite was happening. The goroutine never got a chance to run because the program exited too quickly. 
+
+When you first learn Go, concurrency feels almost too easy.
+Just add the go keyword, and suddenly your function runs concurrently.
+
+But very quickly, you’ll hit a confusing moment:
+
+“Why doesn’t my goroutine print anything?”
+
+Let’s walk through this step by step using a simple example and see how Go actually handles concurrency.
+
+## Goroutines Are Not Background Tasks
+Here’s the simplest possible concurrent program:
+
+```go
+func basicConcurrent() {
+	go func() {
+		fmt.Println("Hello world")
+	}()
+	time.Sleep(1 * time.Second)
+}
+```
+At first glance, this looks fine. We spawn a goroutine and print "Hello world".
+
+But there’s an important rule in Go:
+
+When the main function exits, all goroutines stop immediately.
+
+Goroutines do not live independently of your program. They are managed by the Go runtime, and once the runtime exits, everything is gone.
+
+Why Does `time.Sleep` “Fix” It?
+
+Without `time.Sleep`, this program often prints nothing at all.
+
+That’s because:
+
+1. The goroutine is scheduled to run.
+2. The main function finishes almost instantly.
+3. The program exits before the goroutine gets CPU time.
+
+Adding `time.Sleep` keeps the program alive long enough for the goroutine to execute. This works for demos, but it’s a bad habit.
+
+Why time.Sleep Is a Bad Idea
+
+* You’re guessing how long the goroutine needs.
+* Faster or slower machines behave differently.
+* Multiple goroutines make this approach unmanageable.
+
+In real applications, sleeping is not synchronization.
+
+# The Right Tool: sync.WaitGroup
+Go provides a proper way to wait for goroutines: `sync.WaitGroup`.
+
+Here’s the improved version:
+```go
+func basicConcurrentWithWaitGroup() {
+	wg := sync.WaitGroup{}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		fmt.Println("Hello world. This is from wait group")
+	}()
+
+	wg.Wait()
+}
+```
+This looks slightly more complex, but it solves the problem correctly.
+
+## How WaitGroup Works
+
+Think of a WaitGroup as a counter:
+
+* `wg.Add(1)` → increment the counter
+* `wg.Done()` → decrement the counter
+* `wg.Wait()` → block until the counter reaches zero
+
+## Step-by-step flow:
+
+1. We tell Go: “I’m going to start one goroutine.”
+2. The goroutine runs and prints the message.
+3. When it finishes, it calls `wg.Done()`.
+4. `wg.Wait()` blocks until all goroutines are done.
+5. Only then does the program exit.
+
+No guessing. No sleeping. Just correctness.
+
+## A Common Beginner Mistake
+
+One easy mistake is forgetting `wg.Done()`:
+```go
+go func() {
+	fmt.Println("Hello world")
+}()
+wg.Wait() //
+```
+This causes a deadlock, because the counter never reaches zero.
+
+Another mistake is calling `wg.Add()` inside the goroutine. Always call Add() before starting it.	
+
+# When Should You Use WaitGroup?
+
+Use WaitGroup when:
+
+1. You spawn multiple goroutines.
+2. You only care that they finish.
+3. You don’t need to collect return values.
+
+If you need to pass data back, channels are a better fit.
+If you need coordination or cancellation, context.Context becomes important.
+
+# Final Thoughts
+
+Concurrency in Go is simple, but it’s not magical.
+
+*  Goroutines don’t keep your program alive.
+* `time.Sleep` is not synchronization.
+* `sync.WaitGroup` is the correct tool for waiting.
+
+Once this pattern feels natural, Go’s concurrency model becomes one of its biggest strengths.

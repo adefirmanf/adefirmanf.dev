@@ -1,9 +1,11 @@
 ---
 import { getCollection } from "astro:content";
 import AnimatedTag from "../../components/AnimatedTag.astro";
+import GolangTag from "../../components/GopherTag.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "../../consts";
 import Layout from "../../layouts/Layout.astro";
 import { formatDate } from "../../lib/utils";
+import GopherTag from "../../components/GopherTag.astro";
 
 const collection = await getCollection("posts");
 const posts = collection.sort(
@@ -32,7 +34,10 @@ const posts = collection.sort(
                     {post.data.title}
                   </span>
                   {post.data.tags.find((tag) => tag === "animated") && (
-                    <AnimatedTag />
+                    <AnimatedTag/>
+                  )}
+                  {post.data.tags.find((tag) => tag === "golang") && (
+                    <GopherTag/>
                   )}
                 </div>
 
