@@ -1,0 +1,65 @@
+---
+import { SITE_DESCRIPTION, SITE_TITLE } from "../../consts";
+import Layout from "../../layouts/Layout.astro";
+
+const urls = [
+	{
+		url: "https://bytebytego.com/guides",
+		author: "bytebyte.go",
+		title: "Engineering Visual Guides",
+		description:
+			"Explain complex systems using visuals and simple terms. Help you prepare for system design interviews.",
+	},
+	{
+		url: "https://blog.pragmaticengineer.com/",
+		author: "Gergely Orosz",
+		title: "The Pragmatic Engineer",
+		description:
+			"Deepdives with experienced engineers and tech professionals who share their hard-earned lessons.",
+	},
+	{
+		url: "https://staffeng.com/",
+		author: "Will Larson",
+		title: "StaffEng",
+		description:
+			"Stories and frameworks from Staff, Principal, and Distinguished Engineers on influence, scope, and impact.",
+	},
+	{
+		url: "https://jvns.ca/",
+		author: "Julia Evans",
+		title: "Julia Evans’ Blog",
+		description:
+			"Shows how to explain complex technical ideas clearly — an underrated but critical engineering soft skill.",
+	},
+];
+---
+
+<Layout title={SITE_TITLE} description={SITE_DESCRIPTION}>
+	<main>
+		<ul class="flex flex-col gap-1.5">
+			{
+				urls.map((item) => (
+					<li class="mb-2">
+						<div class="inline-flex items-center text-xs">
+							<span class="text-nowrap text-zinc-500">
+								Author: {item.author}
+							</span>
+						</div>
+
+						<a href={item.url} class="group flex justify-between gap-3">
+							<div class="flex flex-col">
+								<div class="flex items-center gap-2">
+									<span class="font-medium group-hover:underline">
+										{item.title}
+									</span>
+								</div>
+
+								<span class="text-sm text-zinc-500">{item.description}</span>
+							</div>
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</main>
+</Layout>

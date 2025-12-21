@@ -27,12 +27,10 @@ const { Content } = await post.render();
       <p class="mb-1 text-center text-sm text-zinc-800">
         {formatDate(post.data.date)}
       </p>
-
       <h1 class="mb-1 text-center text-xl font-medium">
         {post.data.title}
       </h1>
       {post.data.tags.find((tag) => tag === "animated") && <AnimatedTag />}
-
       <hr class="mb-2 mt-2" />
     </div>
   </main>
