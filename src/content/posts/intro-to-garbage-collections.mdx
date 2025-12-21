@@ -1,0 +1,42 @@
+---
+title: "Intro to garbage collections - Golang"
+description: "A Garbage Collector (GC) is responsible for automatically recycling memory in a program by reclaiming memory that is no longer in use."
+date: "Nov 26 2024"
+tags:  ["golang"] 
+---
+
+# Garbage Collector
+A Garbage Collector (GC) is responsible for automatically recycling memory in a program by reclaiming memory that is no longer in use. This helps prevent memory leaks and optimizes the usage of system resources by freeing up memory that is no longer referenced by the program.
+
+Almost all modern programming languages use dynamic memory allocation, where memory for objects and variables is allocated and deallocated at runtime. In these systems, objects are typically stored in an area of memory called the heap.
+
+## Heap 
+> The term "heap" can have two meanings in programming: one as a data structure and another in memory management. Here, "heap" refers to memory management. Although terms like "stack" are also used in memory management, the stack is not part of GC; it primarily deals with automatic memory allocation for function calls and local variables.
+
+The heap is a section of memory allocated from the main memory (RAM) and is used for dynamic memory allocation. When you create objects like variables, structs, or arrays, some of them are allocated on the heap, particularly if their size is not known until runtime.
+
+GC is involved when memory in the heap has been freed up, but only for objects that are no longer referenced. A garbage collector must not reclaim live (in-use) objects, meaning it should only reclaim objects that are no longer accessible by any part of the program.
+
+## Example In Go 
+
+```go
+package main
+
+func main(){
+  i := 10
+  j := multiplyByTwo(i)
+  println("Result", j)
+}
+
+func multiplyByTwo(n int) int {
+  return n * 2
+}
+```
+## Output
+
+```sh
+Result: 20
+```
+
+In this example, after println is called, the variables i and j are no longer needed, and references to them can be released. <br></br>
+**At this point, the GC can potentially reclaim the memory associated with these variables, depending on the implementation details of the Go runtime.**

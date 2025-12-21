@@ -1,0 +1,201 @@
+---
+title: "File Encryption using GPG"
+description: "Gnu Privacy Guard(GnuPG or GPG) is an Open Source version of the Pretty Good Privacy(PGP) Cryptographic software suite that is used for file encryption."
+date: "May 17 2025"
+tags:  ["tool"] 
+---
+
+# What is GPG
+Gnu Privacy Guard(GnuPG or GPG) is an Open Source version of the Pretty Good Privacy(PGP) Cryptographic software suite that is used for file encryption. GPG is based on the OpenPGP encryption standard which makes it compatible with PGP tools.
+
+# When you need GPG
+You need GPG when you want to involves 2 or more persons to sending / receive some secure data. Here the example of GPG should works:
+
+1. Let's say person A have a file that want to encrypt. For example, credential key that stored in plain_text.
+2. Now, person A want to give the credential key to person B, but before that the person A need to encrypt the file. Person A will request to Person B to share his public key.
+3. After person A received his public key, person A will encrypt the file with his public key.
+4. Then person A send the file that already encrypted. So, the person B can decrypt the file since the person B have a private key.
+
+# You Should Never Encrypt Files with your Private Key
+You should NEVER encrypt a file using your private key. This is because, if you encrypt the file using your private key, then the only key that can decrypt that file is your public key. As the name suggests, a Public key is meant to be shared with others or added to public key servers. Thus, in essence, anybody, who has access to your public key, can decrypt your data.
+
+# Our Goal
+Our goal is simple. We will try to encrypt the data and use password when we want to decrypt.
+
+```
+ 1. Generate the GPG
+ 2. Encrypt the file
+ 3. Decrypt your file
+ 4. Importing someone public key
+ 5. Exporting your public key
+	```
+
+## Installing GPG
+By default, the GPG should be already installed on your machine. But you can try to verify by
+
+```sh
+gpg -h
+```
+In case the gpg doesn't exist, you can try to install first
+
+```sh 
+# Linux
+sudo apt install gnupg
+# Mac
+brew install gnupg
+```
+> For windows, you need to check this link for the installation guide https://gpg4win.org/download.html
+
+## Generate the GPG
+Before we start to encrypt, we need to generate key pair
+
+```sh 
+gpg --full-generate-key
+```
+The command will execute an interactive questions.
+
+For the below questions, we can use the default type of key (ECC)
+
+```sh 
+gpg (GnuPG) 2.4.5; Copyright (C) 2024 g10 Code GmbH
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Please select what kind of key you want:
+   (1) RSA and RSA
+   (2) DSA and Elgamal
+   (3) DSA (sign only)
+   (4) RSA (sign only)
+   (9) ECC (sign and encrypt) *default*
+  (10) ECC (sign only)
+  (14) Existing key from card
+Your selection?
+> [Enter]
+```
+
+Next step, we can just use default option. Press <kbd>Enter</kbd>
+
+```sh
+Please select which elliptic curve you want:
+   (1) Curve 25519 *default*
+   (4) NIST P-384
+   (6) Brainpool P-256
+Your selection?
+> [Enter]
+```
+
+For this time, we need to choose the duration of key. In this tutorial, you can choose 0 for lifetime. But later on, I'd recommend to use time expiration. So, you don't worry if your machine got stolen. So, I use 1y = 1 year as time expiration. I also attach the step later how we can extend the duration.
+
+```sh
+Please specify how long the key should be valid.
+         0 = key does not expire
+      <n>  = key expires in n days
+      <n>w = key expires in n weeks
+      <n>m = key expires in n months
+      <n>y = key expires in n years
+Key is valid for? (0)
+> 1y
+Key expires at Sun  9 Nov 22:07:53 2025 WIB
+Is this correct? (y/N)
+> y
+```
+
+Next, the GPG need your some identity such as name & email.
+
+```sh
+GnuPG needs to construct a user ID to identify your key.
+
+Real name: adefirmanf
+Email address: work@adefirman.dev
+Comment:
+You selected this USER-ID:
+    "adefirmanf <work@adefirman.dev>"
+
+Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit?
+> O
+```
+After that, you need to type password. Make sure the password is secure enough.
+
+## Encrypt your first file
+Great! Now, you've succesfully to generate the pair-key. gpg --list-keys to see your key-pair on list.
+
+```sh
+gpg --list-keys
+
+gpg: checking the trustdb
+gpg: marginals needed: 3  completes needed: 1  trust model: pgp
+gpg: depth: 0  valid:   2  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 2u
+gpg: next trustdb check due at 2025-11-05
+[keyboxd]
+---------
+pub   ed25519 2024-11-09 [SC] [expires: 2025-11-09]
+      28B452D7D6191B2A8EC225833EF3C9798B46993D
+uid           [ultimate] adefirmanf <work@adefirman.dev>
+sub   cv25519 2024-11-09 [E] [expires: 2025-11-09]
+```
+
+Let's try to encrypt the file. First you can choose your random file or you can use below command to generate the plain text.
+
+```sh 
+echo "Hello world" > plain_text.txt
+```
+
+This command will use your public key to encrypt your file. As I mentioned previously, most common practice is you should encrypt the file by using someone public key and then you share the encrypted file to that person.
+```sh 
+gpg -r 28B452D7D6191B2A8EC225833EF3C9798B46993D -a -e plain_text.txt
+```
+
+By default, it will generate a new file with the extension .asc. Below command, I also remove the plain_text.txt
+```sh 
+> ls
+> plain_text.txt      plain_text.txt.asc
+
+> rm -rf plain_text.txt
+
+> ls
+> plain_text.txt.asc
+```
+
+Now let's decrypt the file.
+```sh 
+gpg -u 28B452D7D6191B2A8EC225833EF3C9798B46993D -a -d plain_text.txt.asc > plain_text.txt
+```
+
+At this step, you can try to validate the data inside plain_text.txt
+```sh 
+> ls
+> plain_text.txt      plain_text.txt.asc
+```
+
+# Importing someone public key
+Now let's imagine you want to encrypt the file with someone public key. We can try to simulate by finding public key on public server like Ubuntu, Mit, OpenGPG. I've created a public key that you can try. KeyID: 2BB968FB0C12871F
+```sh
+gpg --keyserver hkps://keys.openpgp.org --recv-keys 2BB968FB0C12871F
+```
+Then, after you received. You can try to encrypt your file.
+
+```sh
+gpg -r 2BB968FB0C12871F -a -e plain_text.txt
+```
+
+For fun, sending me your file that already encrypted via email (syskeys32@gmail.com) for me to try decrypt your file.
+
+# Exporting your public key
+If you want to share your public key, you can just simply use public server like OpenGPG or manual export. Find your ID
+```sh
+gpg --list-keys
+```
+
+After you received your ID, now you can export your public key
+```sh 
+gpg --export -a 453DD59E42CEC012A3229CAA2BB968FB0C12871F > public_key.asc
+```
+
+# Notes
+To simplify the understanding of GPG, here the notes for you.
+* If you received public key, then you the responsibility to encrypt your file
+* If you send the public key, then you the responsibility to decrypt your file
+
+# References 
+* https://dev.to/nerdynene/extensive-guide-to-gnu-privacy-guard-gpg-2a11
+* https://itsfoss.com/gpg-encrypt-files-basic/
