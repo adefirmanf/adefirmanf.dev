@@ -1,0 +1,7 @@
+---
+title: "Kill port application on Mac"
+tags:  ["shell"] 
+---
+```sh
+sudo kill -9 $(sudo lsof -t -i :4000)
+```

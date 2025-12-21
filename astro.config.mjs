@@ -16,6 +16,7 @@ export default defineConfig({
   markdown: {
     rehypePlugins: [rehypeCallouts],
     shikiConfig: {
+      wrap: true,
       themes: {
         light: 'snazzy-light',
         dark: 'tokyo-night',

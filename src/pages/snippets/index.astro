@@ -1,0 +1,158 @@
+---
+import { getCollection } from "astro:content";
+import AnimatedTag from "../../components/AnimatedTag.astro";
+import GolangTag from "../../components/GopherTag.astro";
+import { SITE_DESCRIPTION, SITE_TITLE } from "../../consts";
+import Layout from "../../layouts/Layout.astro";
+import { formatDate } from "../../lib/utils";
+import GopherTag from "../../components/GopherTag.astro";
+
+const posts = await getCollection("snippets");
+const renderedPosts = await Promise.all(
+  posts.map(async (post) => {
+    const { Content } = await post.render()
+    return { post, Content }
+  })
+)
+--- 
+
+<Layout title={SITE_TITLE} description={SITE_DESCRIPTION}>
+  <main>
+    <ul class="flex flex-col gap-1.5">
+      {
+        renderedPosts.map(({post, Content }) => (
+          <li class="mt-2">
+            <h2
+              class=""
+            >
+              <div class="flex flex-col">
+                <div class="flex-inline align-center flex items-center">
+                  <span class="font-medium">
+                    {post.data.title}
+                  </span>
+                  {post.data.tags.find((tag) => tag === "animated") && (
+                    <AnimatedTag/>
+                  )}
+                  {post.data.tags.find((tag) => tag === "golang") && (
+                    <GopherTag/>
+                  )}
+                </div>
+                <article class="snippet-box max-w-xl mt-1" data-expandable>
+																	 <div class="snippet-content collapsed">
+    																<Content />
+  																</div>
+																		<div class="flex justify-end">
+    <span
+      class="cursor-pointer text-nowrap text-sm text-zinc-700 expand-btn mt-1"
+      role="button"
+      tabindex="0"
+    >
+      Expand
+    </span>
+  </div>
+  														</article>
+              </div>
+            </h2>
+          </li>
+        ))
+      }
+    </ul>
+  </main>
+</Layout>
+
+<style>
+
+.snippet-box {
+  border: 1px solid gainsboro;
+  border-radius: 10px;
+  padding: 10px 20px;
+  width: 100%;
+}
+
+
+.snippet-content{
+  position: relative;
+  overflow: hidden;
+  transition: max-height 0.2s ease;
+  /* margin-left: calc(50% - 50vw); */
+  /* margin-right: calc(50% - 50vw); */
+}
+
+/* collapsed */
+.snippet-content.collapsed {
+  max-height: 12rem;
+}
+/* fade overlay */
+.snippet-content.collapsed::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+		bottom: 10px; /* must match box padding-bottom */
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    white
+  );
+}
+
+/* expanded */
+.snippet-content.expanded {
+  max-height: none;
+}
+
+.snippet-content.expanded::after {
+  display: none;
+}
+</style>
+
+<script is:inline>
+  function initExpandable(root) {
+    const content = root.querySelector(".snippet-content");
+    const btnWrapper = root.querySelector(".expand-btn")?.parentElement;
+    const btn = root.querySelector(".expand-btn");
+
+    if (!content || !btn || !btnWrapper) return;
+
+    // measure
+    content.classList.remove("collapsed");
+    const fullHeight = content.scrollHeight;
+    content.classList.add("collapsed");
+    const collapsedHeight = content.clientHeight;
+
+    if (fullHeight <= collapsedHeight) {
+      btnWrapper.remove();
+    }
+  }
+
+  function initAll() {
+    document
+      .querySelectorAll("[data-expandable]")
+      .forEach(initExpandable);
+  }
+
+  function toggleExpand(btn) {
+    const root = btn.closest("[data-expandable]");
+    const content = root.querySelector(".snippet-content");
+
+    const expanded = content.classList.contains("expanded");
+
+    content.classList.toggle("expanded", !expanded);
+    content.classList.toggle("collapsed", expanded);
+
+    btn.textContent = expanded ? "Expand" : "Hide";
+  }
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".expand-btn");
+    if (!btn) return;
+    toggleExpand(btn);
+  });
+
+  // ✅ Run on initial load
+  initAll();
+
+  // ✅ Run on Astro client-side navigation
+  document.addEventListener("astro:page-load", initAll);
+</script>
