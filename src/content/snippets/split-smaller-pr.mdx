@@ -12,13 +12,13 @@ Reset the data changes to un-stashed changes.
 
 1. You need to `checkout` to specific branch first; for example; `huge-branch` 
 2. Run this command
-```
+```sh
 git reset --soft master
 ```
 3. Do commit as usual and push to different branch
 
 **Or complete script**
-```
+```sh
 $ git checkout migrate-to-firebase
 $ git reset --soft develop
 $ git restore --staged .
