@@ -1,0 +1,244 @@
+---
+title: "I Tried Uploading a 1GB File in Go. My Server Didn’t Like That."
+description: "File uploads always feel boring. You write a handler, save the file, move on. I did exactly that—until I tried uploading a 1GB file."
+date: "Jan 01 2026"
+tags:  ["Projects"] 
+---
+
+import FileUpload from "../../project-helpers/uploader/Uploader.tsx"
+
+File uploads always feel boring. You write a handler, save the file, move on. I did exactly that—until I tried uploading a 1GB file. That’s when my Go server started doing things I didn’t expect:
+
+* RAM usage shot up
+* CPU spiked
+* Requests slowed down
+
+Sometimes… the whole thing just froze
+
+Classic.
+
+## The first version (a very Go-looking mistake)
+
+My initial code looked something like this:
+
+```go
+func upload(w http.ResponseWriter, r *http.Request) error {
+    data, err := io.ReadAll(r.Body)
+    if err != nil {
+        return err
+    }
+
+    return os.WriteFile("file.bin", data, 0644)
+
+}
+```
+
+It passed every test.
+It worked perfectly on my laptop. And it completely fell apart in production.
+
+
+## What actually happened under the hood
+
+`io.ReadAll` does exactly what it says: 
+> it reads everything into memory
+
+So when someone uploads a 1GB file:
+
+* 1GB is allocated in RAM
+* Go’s GC starts working overtime
+* latency goes up
+* concurrency goes down
+
+## The real issue wasn’t Go, it was my mental model
+
+I was treating a file upload as:
+
+> “Receive a file, then save it.”
+
+
+But a large file upload is really: 
+
+> “Receive a stream of bytes over time.”
+
+Memory is great for speed.
+It’s terrible for being the source of truth.
+
+## A quick visualization of the bad approach
+
+```
+Client
+  |
+  | 1GB request body
+  v
+Server RAM
+┌──────────────────────┐
+│  io.ReadAll(r.Body)  │  ← 1GB allocation
+└──────────────────────┘
+          |
+          v
+        Disk
+```
+If the process crashes anywhere in the middle, everything is gone.
+
+---
+
+## Discovering chunked (resumable) uploads
+
+The fix wasn’t a micro-optimization.
+
+It was a **design change**.
+
+Instead of uploading the whole file in one request, I changed the flow to:
+
+* split the file into smaller chunks
+* upload chunks one by one
+* write each chunk directly to disk
+
+This pattern usually goes by a few names:
+
+* **chunked upload**
+* **resumable upload**
+* **multipart upload**
+
+Different terms, same core idea.
+
+---
+
+## How chunked upload works (in Go terms)
+
+At a high level, the flow looks like this:
+
+1. Client creates an upload session
+2. Server returns an upload ID
+3. Client sends file chunks with an offset
+4. Server writes bytes at that offset
+5. Repeat until the full file is uploaded
+
+The important shift here is **where state lives**.
+
+* Memory → temporary
+* Disk → source of truth
+
+---
+
+## The key Go primitive: `Seek`
+
+Everything hinges on one simple operation:
+
+```go
+file.Seek(offset, io.SeekStart)
+io.Copy(file, r.Body)
+```
+
+`Seek` moves the file’s write cursor to a specific byte position.
+
+That means:
+
+* chunks don’t overwrite each other
+* uploads can resume from the last known offset
+* the server doesn’t need to keep large buffers in memory
+
+This is the core building block of resumable uploads.
+
+---
+
+## Visualizing the chunked approach
+
+### Writing chunks to disk
+
+```
+Disk file
+┌────────────────────────────────┐
+│ chunk 0 │ chunk 1 │ chunk 2 │ … │
+└────────────────────────────────┘
+   ^0MB       ^1MB       ^2MB
+```
+
+Each PATCH request effectively says:
+
+> “Write these bytes starting at offset **X**.”
+
+The server doesn’t care whether this is the first request or the tenth.
+
+---
+
+### Resuming after a failure
+
+```
+Client connection drops at ~700MB
+             ↓
+Client asks server: "What offset do you have?"
+             ↓
+Server responds: 734003200
+             ↓
+Client resumes upload from that offset
+```
+
+No re-upload from zero.
+No wasted bandwidth.
+
+---
+
+## Why this works so well in Go
+
+This approach plays nicely with Go’s strengths:
+
+* streaming I/O via `io.Reader`
+* explicit control over files
+* predictable memory usage
+* minimal GC pressure
+
+And it avoids one of Go’s common pain points:
+large, long-lived `[]byte` allocations.
+
+Instead of fighting the runtime, you work with it.
+
+---
+
+## This is not a custom invention
+
+This pattern is already battle-tested.
+
+It’s used by:
+
+* **TUS protocol**
+* **Amazon S3 multipart upload**
+* **Google Cloud resumable uploads**
+
+If you’ve ever uploaded a large file to cloud storage, this is almost certainly what was happening behind the scenes.
+
+---
+
+## When chunked upload is worth the complexity
+
+Chunked uploads make sense when:
+
+* files are large (hundreds of MB or more)
+* uploads need to be resumable
+* multiple users upload concurrently
+* server stability matters
+
+For small files like avatars or small CSVs, a simple upload handler is still fine.
+
+---
+
+## Final takeaway
+
+My code wasn’t “bad”.
+
+My **mental model** was.
+
+Files are streams.
+Disk is durable state.
+Memory is temporary.
+
+Once I stopped buffering everything in RAM, the crashes stopped—and uploads became boring again (in the best way).
+
+---
+
+## Demo 
+Thanks for Filepond to provide the library for the UI 
+<FileUpload client:load/>
+
+## Projects
+https://github.com/adefirmanf/chunk-upload-server
