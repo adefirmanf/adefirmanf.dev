@@ -19,4 +19,13 @@ const snippets = defineCollection({
   })
 })
 
-export const collections = { posts, snippets };
+const projects = defineCollection({
+  type: "content",
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    tags: z.array(z.string()).default([]),
+  })
+})
+
+export const collections = { posts, snippets, projects };

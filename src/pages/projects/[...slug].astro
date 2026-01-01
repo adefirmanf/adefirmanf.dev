@@ -1,0 +1,39 @@
+---
+import { type CollectionEntry, getCollection } from "astro:content";
+import AnimatedTag from "../../components/AnimatedTag.astro";
+import Layout from "../../layouts/Layout.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("projects");
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: post,
+  }));
+}
+type Props = CollectionEntry<"projects">;
+
+const post = Astro.props;
+const { Content } = await post.render();
+---
+
+<Layout title={post.data.title} description={post.data.description}>
+  <main>
+    <div class="text-center">
+      <h1 class="mb-1 text-center text-xl font-medium">
+        {post.data.title}
+      </h1>
+      {post.data.tags.find((tag) => tag === "animated") && <AnimatedTag />}
+      <hr class="mb-2 mt-2" />
+    </div>
+  </main>
+  <article>
+    <Content />
+  </article>
+</Layout>
+
+<style>
+  .text-zinc-800 {
+    --tw-text-opacity: 1;
+    color: rgb(161 161 172);
+  }
+</style>

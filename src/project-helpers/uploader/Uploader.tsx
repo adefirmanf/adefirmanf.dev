@@ -9,6 +9,7 @@ export default function FileUpload() {
   const [files, setFiles] = useState<any[]>([]);
   return (
     <div className="App">
+
       <FilePond
 								server={
 									{url: 'https://balanced-leland-hourglass98-057c6940.koyeb.app/upload'}
@@ -21,6 +22,10 @@ export default function FileUpload() {
         labelIdle='Drag & Drop your file or <span class="filepond--label-action">Browse</span>'
         chunkUploads={true}
       />
+      <span className="text-sm text-zinc-500">
+        Please give the server a moment to restart due to long inactivity. Try again if it fails.
+      </span>
+      <br></br>
     </div>
   );
 }
