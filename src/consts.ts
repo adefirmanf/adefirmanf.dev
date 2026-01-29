@@ -6,3 +6,4 @@ export const SITE_TITLE = "Adefirmanf.dev";
 export const SITE_DESCRIPTION =
   "Miniblog is an opinionated and extremely minimal blogging template built with Astro and Tailwind CSS.";
 
+export const AWS_KEY="AKIA1234567890EXAMPLE"
